@@ -1,4 +1,4 @@
-module github.com/bluenviron/gortsplib/v4
+module github.com/jy8608-kim/gortsplib/v4
 
 go 1.23.0
 
