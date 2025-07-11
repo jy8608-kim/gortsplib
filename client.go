@@ -89,13 +89,16 @@ func findBaseURL(sd *sdp.SessionDescription, res *base.Response, u *base.URL) (*
 
 	// use Content-Base
 	if cb, ok := res.Header["Content-Base"]; ok {
-		if len(cb) != 1 {
-			return nil, fmt.Errorf("invalid Content-Base: '%v'", cb)
+		raw := strings.Trim(cb[0], "[]") // ← 대괄호 제거
+
+		// 빈 값이나 '[trash]' 같이 이상한 값일 땐 무시하고 URL 자체를 사용
+		if raw == "" {
+			return u, nil
 		}
 
-		if strings.HasPrefix(cb[0], "/") {
+		if strings.HasPrefix(raw, "/") {
 			// parse as a relative path
-			ret, err := base.ParseURL(u.Scheme + "://" + u.Host + cb[0])
+			ret, err := base.ParseURL(u.Scheme + "://" + u.Host + raw)
 			if err != nil {
 				return nil, fmt.Errorf("invalid Content-Base: '%v'", cb)
 			}
@@ -106,7 +109,7 @@ func findBaseURL(sd *sdp.SessionDescription, res *base.Response, u *base.URL) (*
 			return ret, nil
 		}
 
-		ret, err := base.ParseURL(cb[0])
+		ret, err := base.ParseURL(raw)
 		if err != nil {
 			return nil, fmt.Errorf("invalid Content-Base: '%v'", cb)
 		}
