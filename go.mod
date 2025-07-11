@@ -4,6 +4,7 @@ go 1.23.0
 
 require (
 	github.com/asticode/go-astits v1.13.0
+	github.com/bluenviron/gortsplib/v4 v4.15.0
 	github.com/bluenviron/mediacommon/v2 v2.3.0
 	github.com/google/uuid v1.6.0
 	github.com/pion/rtcp v1.2.15
