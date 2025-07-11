@@ -91,8 +91,8 @@ func findBaseURL(sd *sdp.SessionDescription, res *base.Response, u *base.URL) (*
 	if cb, ok := res.Header["Content-Base"]; ok {
 		raw := strings.Trim(cb[0], "[]") // ← 대괄호 제거
 
-		// 빈 값이나 '[trash]' 같이 이상한 값일 땐 무시하고 URL 자체를 사용
-		if raw == "" {
+		// 비정상 헤더는 전부 무시하고 요청 URL 사용
+		if raw == "" || !strings.Contains(raw, "://") {
 			return u, nil
 		}
 
