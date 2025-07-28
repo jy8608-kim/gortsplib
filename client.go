@@ -73,6 +73,35 @@ func isAnyPort(p int) bool {
 	return p == 0 || p == 1
 }
 
+// cleanSDP는 SDP 문자열에서 공백 문제를 수정합니다.
+// 특히 'b=AS:38400 ' 같은 라인에서 끝의 공백을 제거합니다.
+func cleanSDP(sdpData []byte) []byte {
+	lines := strings.Split(string(sdpData), "\n")
+	var cleanedLines []string
+
+	for _, line := range lines {
+		line = strings.TrimRight(line, "\r")
+
+		// b= 라인에서 끝의 공백 제거
+		if strings.HasPrefix(line, "b=") {
+			// b=AS:38400 형태의 라인에서 끝의 공백 제거
+			line = strings.TrimRight(line, " ")
+			// 추가로 콜론 뒤의 공백도 정리
+			if strings.Contains(line, ":") {
+				parts := strings.SplitN(line, ":", 2)
+				if len(parts) == 2 {
+					parts[1] = strings.TrimSpace(parts[1])
+					line = parts[0] + ":" + parts[1]
+				}
+			}
+		}
+
+		cleanedLines = append(cleanedLines, line)
+	}
+
+	return []byte(strings.Join(cleanedLines, "\n"))
+}
+
 func findBaseURL(sd *sdp.SessionDescription, res *base.Response, u *base.URL) (*base.URL, error) {
 	// use global control attribute
 	if control, ok := sd.Attribute("control"); ok && control != "*" {
@@ -1400,8 +1429,11 @@ func (c *Client) doDescribe(u *base.URL) (*description.Session, *base.Response, 
 		return nil, nil, liberrors.ErrClientContentTypeUnsupported{CT: ct}
 	}
 
+	// SDP 정리: 공백 문제 수정
+	cleanedBody := cleanSDP(res.Body)
+
 	var ssd sdp.SessionDescription
-	err = ssd.Unmarshal(res.Body)
+	err = ssd.Unmarshal(cleanedBody)
 	if err != nil {
 		return nil, nil, liberrors.ErrClientSDPInvalid{Err: err}
 	}

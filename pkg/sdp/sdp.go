@@ -241,6 +241,9 @@ func (s *SessionDescription) unmarshalSessionConnectionInformation(value string)
 }
 
 func unmarshalBandwidth(value string) (*psdp.Bandwidth, error) {
+	// 입력값에서 앞뒤 공백 제거
+	value = strings.TrimSpace(value)
+
 	parts := strings.Split(value, ":")
 	if len(parts) != 2 {
 		return nil, fmt.Errorf("%w `b=%v`", errSDPInvalidValue, parts)
@@ -256,6 +259,9 @@ func unmarshalBandwidth(value string) (*psdp.Bandwidth, error) {
 		// https://tools.ietf.org/html/rfc3556#section-2
 		return nil, fmt.Errorf("%w `%v`", errSDPInvalidValue, parts[0])
 	}
+
+	// parts[1]에서도 공백 제거
+	parts[1] = strings.TrimSpace(parts[1])
 
 	bandwidth, err := strconv.ParseUint(parts[1], 10, 64)
 	if err != nil {
